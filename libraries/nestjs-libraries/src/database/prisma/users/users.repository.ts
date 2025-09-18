@@ -162,7 +162,7 @@ export class UsersRepository {
   }
 
   async getMarketplacePeople(orgId: string, userId: string, items: ItemsDto) {
-    const info = {
+    const info:any = {
       id: {
         not: userId,
       },

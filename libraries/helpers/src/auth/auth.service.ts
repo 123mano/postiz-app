@@ -17,26 +17,66 @@ export class AuthService {
     return verify(token, process.env.JWT_SECRET!);
   }
 
-  static fixedEncryption(value: string) {
-    // encryption algorithm
+  // static fixedEncryption(value: string) {
+  //   // encryption algorithm
+  //   const algorithm = 'aes-256-cbc';
+
+  //   // create a cipher object
+  //   const cipher = crypto.createCipher(algorithm, process.env.JWT_SECRET);
+
+  //   // encrypt the plain text
+  //   let encrypted = cipher.update(value, 'utf8', 'hex');
+  //   encrypted += cipher.final('hex');
+
+  //   return encrypted;
+  // }
+
+  // static fixedDecryption(hash: string) {
+  //   const algorithm = 'aes-256-cbc';
+  //   const decipher = crypto.createDecipher(algorithm, process.env.JWT_SECRET);
+
+  //   // decrypt the encrypted text
+  //   let decrypted = decipher.update(hash, 'hex', 'utf8');
+  //   decrypted += decipher.final('utf8');
+
+  //   return decrypted;
+  // }
+
+  static fixedEncryption(value: string): string {
     const algorithm = 'aes-256-cbc';
+    function getKey() {
+      return crypto
+        .createHash('sha256')
+        .update(process.env.JWT_SECRET || '')
+        .digest();
+    }
 
-    // create a cipher object
-    const cipher = crypto.createCipher(algorithm, process.env.JWT_SECRET);
+    const iv = Buffer.alloc(16, 0);
 
-    // encrypt the plain text
+    const key = getKey();
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
+
     let encrypted = cipher.update(value, 'utf8', 'hex');
     encrypted += cipher.final('hex');
 
     return encrypted;
   }
 
-  static fixedDecryption(hash: string) {
+  static fixedDecryption(encrypted: string): string {
     const algorithm = 'aes-256-cbc';
-    const decipher = crypto.createDecipher(algorithm, process.env.JWT_SECRET);
 
-    // decrypt the encrypted text
-    let decrypted = decipher.update(hash, 'hex', 'utf8');
+    function getKey() {
+      return crypto
+        .createHash('sha256')
+        .update(process.env.JWT_SECRET || '')
+        .digest();
+    }
+
+    const iv = Buffer.alloc(16, 0);
+    const key = getKey();
+    const decipher = crypto.createDecipheriv(algorithm, key, iv);
+
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
 
     return decrypted;
